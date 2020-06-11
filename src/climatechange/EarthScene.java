@@ -1,17 +1,24 @@
 package climatechange;
 
 import java.net.URL;
+import java.util.ResourceBundle;
 
 import com.interactivemesh.jfx.importer.ImportException;
 import com.interactivemesh.jfx.importer.obj.ObjModelImporter;
 
-import javafx.application.Application;
+import javafx.fxml.Initializable;
 import javafx.geometry.Point3D;
-import javafx.scene.*;
+import javafx.scene.AmbientLight;
+import javafx.scene.Group;
+import javafx.scene.Parent;
+import javafx.scene.PerspectiveCamera;
+import javafx.scene.PointLight;
+import javafx.scene.Scene;
+import javafx.scene.SceneAntialiasing;
+import javafx.scene.SubScene;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
-import javafx.scene.shape.Box;
 import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.Shape3D;
@@ -21,13 +28,26 @@ import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 import javafx.stage.Stage;
 
-public class EarthTest extends Application {
+public class EarthScene extends SubScene{
 
-    private static final float TEXTURE_LAT_OFFSET = -0.2f;
+	private static final float TEXTURE_LAT_OFFSET = -0.2f;
     private static final float TEXTURE_LON_OFFSET = 2.8f;
+	
+    private Group root3D;
+    
+	public EarthScene(Parent root, double width, double height, boolean depthBuffer, SceneAntialiasing antiAliasing) {
+		super(root, width, height, depthBuffer, antiAliasing);
+		root3D = (Group) root;
+	}
 
-    @Override
-    public void start(Stage primaryStage) {
+/*
+	@Override
+	public void initialize(URL location, ResourceBundle resources) {
+		// TODO Auto-generated method stub
+		System.out.println("called");
+	}
+*/
+    public void init() {
 
     	
     	ObjModelImporter objImporter = new ObjModelImporter();
@@ -43,12 +63,13 @@ public class EarthTest extends Application {
     	Group earth = new Group(meshViews);
     	
         //Create a Pane et graph scene root for the 3D content
-        Group root3D = new Group();
-        Pane pane3D = new Pane(root3D);
+        
+        //Pane pane3D = new Pane(root3D);
 
         //moi : ajout du groupe earth au graphe de la scene 3D
-        root3D.getChildren().addAll(earth);
+    	root3D.getChildren().addAll(earth);
         
+        /*
         Group cities = new Group();
         
         final float latMarseille = 43.447f;
@@ -110,9 +131,19 @@ public class EarthTest extends Application {
         	
         }  
         root3D.getChildren().addAll(lineGroup);
+        */
+        // Load geometry
 
+        // Draw a line
+
+        // Draw an helix
+
+        // Draw city on the earth
+
+
+        // Add a camera group
         PerspectiveCamera camera = new PerspectiveCamera(true);
-        new CameraManager(camera, pane3D, root3D);
+        new CameraManager(camera, this, root3D);
 
         // Add point light
         PointLight light = new PointLight(Color.WHITE);
@@ -126,20 +157,13 @@ public class EarthTest extends Application {
         AmbientLight ambientLight = new AmbientLight(Color.WHITE);
         ambientLight.getScope().addAll(root3D);
         root3D.getChildren().add(ambientLight);
+        
+        this.setCamera(camera);
+        this.setFill(Color.gray(0.2));
+        
+        //group3D.getChildren().addAll(this);
+        
 
-        // Create scene
-        Scene scene = new Scene(pane3D, 600, 600, true);
-        scene.setCamera(camera);
-        scene.setFill(Color.gray(0.2));
-
-        //Add the scene to the stage and show it
-        primaryStage.setTitle("Earth Test");
-        primaryStage.setScene(scene);
-        primaryStage.show();
-    }
-
-    public static void main(String[] args) {
-        launch(args);
     }
 
 
@@ -264,5 +288,7 @@ public class EarthTest extends Application {
     	
     			
     }
+
+	
 
 }

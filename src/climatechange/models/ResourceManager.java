@@ -1,16 +1,42 @@
 package climatechange.models;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
+import climatechange.CSVParser;
+import climatechange.Controller;
 import javafx.util.Pair;
 
 public class ResourceManager {
 
-	public Object sampleNumber;
-
 	
-	public HashMap<Integer,HashMap<Coord,Double>> mapFromYear;
+    public final int minYear = 1880;
+    public final int maxYear = 2021;
+	
+	public ResourceManager() {
+		
+		mapData = new HashMap<Integer, HashMap<Coord,Float>>();
+		
+        for(int i=minYear;i<maxYear;i++) {
+        	mapData.put(i,new HashMap<Coord,Float>());
+        }
+		
+	}
+	
+    /** Instance unique pré-initialisée */
+    public static ResourceManager INSTANCE = new ResourceManager();
+     
+    /** Point d'accès pour l'instance unique du singleton */
+    public static ResourceManager getInstance()
+    {
+    	return INSTANCE;
+    }
+	
+   
+	
+	public HashMap<Integer,HashMap<Coord,Float>> mapData;
 	
 	public float vitesseAnimation;
 	public boolean enPause;
@@ -19,30 +45,78 @@ public class ResourceManager {
 	
 	public TypeAffichage typeAffiche;
 	
-	public Pair<Integer,Integer> getMinMaxTemps(){
+	public Pair<Float,Float> getMinMaxTemps(){
 		
-		return null;
+		float minTemp = 999;
+		float maxTemp = -999;
+		
+		
+		for(int i=minYear;i<maxYear;i++) {
+			
+			//pourrait etre optimisé
+		    Collection<Float> values = mapData.get(i).values();
+		    
+		    
+			//System.out.println(mapData.get(1900).values().size());
+		    
+		    Float[] targetArray = values.toArray(new Float[values.size()]);
+			for(float d : targetArray) {
+				
+				if (d > maxTemp) {
+					maxTemp = d;
+				}
+				if (d < minTemp) {
+					minTemp = d;
+				}
+				
+			}
+		    
+		}
+		
+		System.out.println(minTemp);
+		
+		return new Pair(minTemp,maxTemp);
+		
 	}
+	
 	public double getTempsFromZoneYear(Coord c, int year) {
-		return (Double) null;
+		return this.mapData.get(year).get(c);
 	}
-	public List<Double> getTempsFromYear(int year){
-		return null;
+	
+	//censé marché
+	public List<Float> getTempsFromYear(int year){
+		
+		List<Float> retour = new ArrayList<Float>();
+		
+		for(int lat =-88;lat<=88;lat+=4) {
+			for(int lon=-178;lon<=178;lon+=4) {
+				retour.add((this.mapData.get(year).get(new Coord(lat,lon))));
+			}
+		}
+		
+		return retour;
+		
 		
 	}
 	
-	public List<Double> getTempsFromZone(Coord zone){
+	//marche
+	public List<Float> getTempsFromZone(Coord zone){
 		
-		return null;
+		List<Float> retour = new ArrayList<Float>();
+		for(int i=minYear;i<maxYear;i++) {
+			retour.add(this.mapData.get(i).get(zone));
+		}
+		return retour;
+		
 	}
 	
-	public void AddTempAnomaly(double temp, int year, Coord c) {
+	public void AddTempAnomaly(float temp, int year, Coord c) {
 		
 		
 	}
 	
 	public void readTemperatureFile(String path) {
-		// TODO Auto-generated method stub
+    	CSVParser.getDataFromCSVFile(path,this);
 		
 	}
 

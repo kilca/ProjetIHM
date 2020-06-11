@@ -9,7 +9,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+
+import climatechange.models.Coord;
+import climatechange.models.ResourceManager;
 
 public class CSVParser {
 	/**
@@ -42,20 +46,26 @@ public class CSVParser {
 	    }
 	}
 	
-	public static void getDataFromCSVFile(String csvFilePath,Controller c)
+	public static void getDataFromCSVFile(String csvFilePath, ResourceManager rm)
 	{
+		
+		
+		Controller c = Controller.getInstance();
+		
         String line = "";
         String[] data = null;
-        String separator = ",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)";
+        
+        //String separator = ",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)";
+        String separator = ",";
         
         //Document data
-        String lat;
-        String lon;
-        List<String> temp = new ArrayList<String>();
+        int lat = 0;
+        int lon = 0;
         
         int nbLine = 0;
         int currLine = 0;
         
+        HashMap<Integer, HashMap<Coord,Float>> map = rm.mapData;
         
         try {
 			nbLine = countLinesOld(csvFilePath);
@@ -82,27 +92,53 @@ public class CSVParser {
             	
             	//Sort data
             		
+            	try {
             		//Get the ISBN number
-            		lat = data[0];
+            		lat = Integer.parseInt(data[0]);
             		
             		//Get the EAN number
-            		lon = data[1];
-            		
+            		lon = Integer.parseInt(data[1]);
+            	
             		//Get the title of the document
             		
-            		for(int i=2;i<data.length;i++) {
+            	}catch(Exception e) {
+            		e.printStackTrace();
+            	}	
+            	
+            	Coord coord = new Coord(lat,lon);
+            	
+
+            	
+            	for(int i=2;i<data.length;i++) {
+            		
+            		float temper = Float.NaN;
+            		
+                	try {
+                		if (data[i].equals("0")) {
+                			temper = 0;
+                		}
+                		else if (!data[i].equals("NA")) {
+                			temper = Float.parseFloat(data[i]);
+                		}
+                	}catch (Exception e) {
+                		System.err.println(data[i]);
+                	}
+            		
+                	//System.out.println(temper);
+                	
+            		try {	
             			
-            			temp.add(data[i]);
+            			map.get(1878+i).put(coord, temper);
+
+            		}catch (Exception e) {
+            			System.err.println(i);
             		}
+            	}
             		
             	currLine++;
             	
-            	if (c == null) {
-            		Controller.getInstance().SetProgess((double)currLine/nbLine);
-            	}else {
-            		c.SetProgess((double)currLine/nbLine);  		
-            	}
             }
+            
                 
 
         }
