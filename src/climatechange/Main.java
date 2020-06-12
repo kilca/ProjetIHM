@@ -63,35 +63,9 @@ public class Main extends Application {
 
     public static void main(String[] args) {
     	
-    	//CSVParser.getDataFromCSVFile("tempanomaly_4x4grid.csv");
-    
-    	//CSVParser.getDataFromCSVFile("src\\climatechange\\tempanomaly_4x4grid.csv");
     	
-    	//System.out.println("fin chargement");
-    	
-    	/*
-    	SimpleTest st = new SimpleTest();
-    	try {
-			st.setUp();
-			st.YearNumberTest();
-			st.MinTemperatureTest();
-			st.MaxTemperatureTest();
-			st.TemperatureAnomalyTest();
-			st.TemperatureAnomalyZoneTest();
-			st.TemperatureAnomalyYearTest();
-			
-			
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	*/
-    	
-    	//launch(args);
+    	launch(args);
 
-    	ResourceManager rm = ResourceManager.getInstance();
-    	
-    	CSVParser.getDataFromCSVFile("src\\climatechange\\tempanomaly_4x4grid.csv",ResourceManager.getInstance());
 
         
     }

@@ -107,7 +107,7 @@ public class SimpleTest {
 		
 		Object[] tempCompare = resourceManager.getTempsFromZone(c).toArray();
 		
-		assertEquals(temperatureAnomalies12x154,tempCompare);
+		assertArrayEquals(temperatureAnomalies12x154,tempCompare);
 		
 	}
 
@@ -124,7 +124,7 @@ public class SimpleTest {
 		
 		
 		
-		assertEquals(temperatureAnomalies1952,tempComparaison);
+		assertArrayEquals(temperatureAnomalies1952,tempComparaison);
 		
 	}
 

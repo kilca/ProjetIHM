@@ -73,9 +73,7 @@ public class ResourceManager {
 		    
 		}
 		
-		System.out.println(minTemp);
-		
-		return new Pair(minTemp,maxTemp);
+		return new Pair<Float,Float>(minTemp,maxTemp);
 		
 	}
 	
@@ -83,7 +81,7 @@ public class ResourceManager {
 		return this.mapData.get(year).get(c);
 	}
 	
-	//censé marché
+	//pourrait etre plus generique avec keyset
 	public List<Float> getTempsFromYear(int year){
 		
 		List<Float> retour = new ArrayList<Float>();
