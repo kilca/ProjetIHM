@@ -62,7 +62,7 @@ public class SimpleTest {
 		float test = -6.2441664f;
 		float d = resourceManager.getMinMaxTemps().getKey();
 		assertEquals(test,d,0.002f);
-
+		
 		//Vérifier que la température minimale dans le fichier est -6.2441664
 		
 

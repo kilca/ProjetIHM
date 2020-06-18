@@ -34,6 +34,7 @@ public class CameraManager {
 
     private Camera camera;
 
+    
     public CameraManager(Camera cam, Node mainRoot, Group root) {
 
         camera = cam;
@@ -51,7 +52,7 @@ public class CameraManager {
         camera.setTranslateZ(CAMERA_INITIAL_DISTANCE);
         ry.setAngle(CAMERA_INITIAL_Y_ANGLE);
         rx.setAngle(CAMERA_INITIAL_X_ANGLE);
-
+        
         // Add keyboard and mouse handler
         handleKeyboard(mainRoot, root);
         handleMouse(mainRoot, root);
@@ -69,6 +70,7 @@ public class CameraManager {
 
                 // Set focus on the mainRoot to be able to detect key press
                 mainRoot.requestFocus();
+                
             }
         });
         mainRoot.setOnMouseDragged(new EventHandler<MouseEvent>() {

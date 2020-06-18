@@ -1,11 +1,17 @@
 package climatechange;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import com.interactivemesh.jfx.importer.ImportException;
 import com.interactivemesh.jfx.importer.obj.ObjModelImporter;
 
+import climatechange.models.Coord;
+import climatechange.models.ResourceManager;
+import climatechange.models.TypeAffichage;
 import javafx.fxml.Initializable;
 import javafx.geometry.Point3D;
 import javafx.scene.AmbientLight;
@@ -27,17 +33,43 @@ import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 
 public class EarthScene extends SubScene{
-
+	
 	private static final float TEXTURE_LAT_OFFSET = -0.2f;
     private static final float TEXTURE_LON_OFFSET = 2.8f;
 	
     private Group root3D;
     
+    private Group lineGroup;
+    
+    private Group quadriGroup;
+    
+    /*
+    private HashMap<Coord,Cylinder> coordToCylinder;
+    private HashMap<Coord,MeshView> coordToMeshView;
+    */
+    
+    private List<MeshView> meshList;
+    private List<Cylinder> cylinderList;
+    
+    private ResourceManager modelInstance;
+    
 	public EarthScene(Parent root, double width, double height, boolean depthBuffer, SceneAntialiasing antiAliasing) {
 		super(root, width, height, depthBuffer, antiAliasing);
 		root3D = (Group) root;
+		
+		/*
+		coordToCylinder = new HashMap<Coord,Cylinder>();
+		coordToMeshView = new HashMap<Coord,MeshView>();
+		*/
+		
+		meshList = new ArrayList<MeshView>();
+		cylinderList = new ArrayList<Cylinder>();
+		
+		modelInstance = ResourceManager.getInstance();
+		
 	}
 
 /*
@@ -47,6 +79,228 @@ public class EarthScene extends SubScene{
 		System.out.println("called");
 	}
 */
+	
+	public static float clamp(float val, float min, float max) {
+	    return Math.max(min, Math.min(max, val));
+	}
+	
+	public void setHisto() {
+				
+		List<Float> temps = modelInstance.getTempsFromYear(modelInstance.yearSelected);
+		
+		if (temps.size() != cylinderList.size()) {
+			System.err.println("erreur taille temperature array ("+temps.size()+","+cylinderList.size());
+			return;
+		}
+		
+		
+		
+		float height;
+		for(int i=0;i<temps.size();i++) {
+			if (Float.isNaN(temps.get(i))) {
+				cylinderList.get(i).setVisible(false);
+			}else {
+				cylinderList.get(i).setVisible(true);
+				
+				//cast en int pour réduire le lag induit par setHeight
+				height = Math.round(clamp((2+temps.get(i)),0.2f,5.0f));
+				height = height/2.0f;
+				
+
+				cylinderList.get(i).setHeight(height);
+				
+				
+			}
+		}
+		
+		
+		for(int i=0;i<temps.size();i++) {
+			setZoneTemperatureCylinder(cylinderList,temps,i);
+		}
+		
+		
+		
+		
+	}
+	
+	
+	
+	
+	public void setQuadri() {
+		
+		List<Float> temps = modelInstance.getTempsFromYear(modelInstance.yearSelected);
+		
+		if (temps.size() != meshList.size()) {
+			System.err.println("erreur taille temperature array");
+		}
+		
+		for(int i=0;i<temps.size();i++) {
+			setZoneTemperatureMesh(meshList,temps,i);
+		}
+		
+		
+		
+	}
+	
+	//pourrait utiliser de la généricité
+	public void setZoneTemperatureCylinder(List<Cylinder> meshList, List<Float> temps, int i) {
+		
+		if (Float.isNaN(temps.get(i))) {
+			this.setColor(meshList.get(i), modelInstance.nanColor);
+			return;
+		}
+		
+		if (temps.get(i) < 0) {
+
+			for(int j=modelInstance.degradeBleuList.size()-1;j>=0;j--) {
+				if (modelInstance.degradeBleuList.get(j).value < temps.get(i)) {
+					this.setColor(meshList.get(i), modelInstance.degradeBleuList.get(j).color);
+					return;
+				}
+			}
+		}else {
+			for(int j=0;j<modelInstance.degradeRougeList.size();j++) {
+				if (modelInstance.degradeRougeList.get(j).value > temps.get(i)) {
+					//System.out.println("temps :"+modelInstance.degradeRougeList.get(j).value+", index:"+j);
+					this.setColor(meshList.get(i), modelInstance.degradeRougeList.get(j).color);
+					return;
+				}
+			}
+		}
+		
+	}
+	public void setZoneTemperatureMesh(List<MeshView> meshList, List<Float> temps, int i) {
+		
+		if (Float.isNaN(temps.get(i))) {
+			this.setColor(meshList.get(i), modelInstance.nanColor);
+			return;
+		}
+		
+		if (temps.get(i) < 0) {
+
+			for(int j=modelInstance.degradeBleuList.size()-1;j>=0;j--) {
+				if (modelInstance.degradeBleuList.get(j).value < temps.get(i)) {
+					this.setColor(meshList.get(i), modelInstance.degradeBleuList.get(j).color);
+					return;
+				}
+			}
+		}else {
+			for(int j=0;j<modelInstance.degradeRougeList.size();j++) {
+				if (modelInstance.degradeRougeList.get(j).value > temps.get(i)) {
+					//System.out.println("temps :"+modelInstance.degradeRougeList.get(j).value+", index:"+j);
+					this.setColor(meshList.get(i), modelInstance.degradeRougeList.get(j).color);
+					return;
+				}
+			}
+		}
+		
+	}
+	
+	public void afficherQuadri() {
+		
+		System.out.println("on affiche le Quadri");
+		
+		modelInstance.typeAffiche = TypeAffichage.Quadri;
+		
+		quadriGroup.setVisible(true);
+		lineGroup.setVisible(false);
+		
+		this.setQuadri();
+		
+	}
+	
+	public void afficherHisto() {
+		
+		modelInstance.typeAffiche = TypeAffichage.Histo;
+		
+		quadriGroup.setVisible(false);
+		lineGroup.setVisible(true);
+		
+		this.setHisto();
+		
+	}
+
+	public void initQuadri(int pas) {
+		
+        System.out.println("j'init quadri");
+		
+        quadriGroup = new Group();
+        
+        Color c1 = new Color(0.1,0.0,0.0,0.1);
+        Color c2 = new Color(0.0,0.1,0.0,0.1);
+        
+        pas = 4;
+
+        int count=0;
+        
+        for(int i=-88;i<=88;i+=pas) {
+        	
+        	for(int j=-178;j<=178;j+=pas) {
+        		
+        		count++;
+        		
+        		if ((count%2) == 0) {
+        			CallQuadri(quadriGroup,i,j,c1,pas/2);
+        		}else {
+        			CallQuadri(quadriGroup,i,j,c2,pas/2);
+        		}
+        		
+        	}
+    		count++;
+        	
+        }
+        /*
+        for(int i=-180;i<180;i+=pas) {
+        	
+        	for(int j=-180;j<180;j+=pas) {
+        		
+        		if (((i+j)%(pas*2)) == 0) {
+        			CallQuadri(quadriGroup,i,j,c1,pas/2);
+        		}else {
+        			CallQuadri(quadriGroup,i,j,c2,pas/2);
+        		}
+        		
+        	}
+        	
+        }
+        */ 
+        root3D.getChildren().addAll(quadriGroup);
+		
+	}
+	
+	public void initHisto(int pas) {
+        lineGroup = new Group();
+        
+        Color c1 = new Color(0.1,0.1,0.1,0.1);
+        
+        for(int i=-88;i<=88;i+=pas) {
+        	
+        	for(int j=-178;j<=178;j+=pas) {
+        		
+        		Point3D p1 = geoCoordTo3dCoord(i,j,1.0f);
+        		Point3D p2 = geoCoordTo3dCoord(i,j,2.0f);
+        		Cylinder c = createLine(p1,p2);
+
+        		c.setRadius(0.02);
+        		
+                final PhongMaterial mat = new PhongMaterial(c1);
+                c.setMaterial(mat);
+
+                
+        		lineGroup.getChildren().addAll(c);
+        		
+        		cylinderList.add(c);
+        		
+        		
+        	}
+        	
+        }  
+        root3D.getChildren().addAll(lineGroup);
+		
+		
+	}
+	
+	
     public void init() {
 
     	
@@ -89,49 +343,11 @@ public class EarthScene extends SubScene{
         //displayTown(cities,"Seoul",latSeoul,longSeoul);
         
         root3D.getChildren().addAll(cities);
-        
-        
-        Group quadriGroup = new Group();
-        
-        Color c1 = new Color(0.1,0.0,0.0,0.1);
-        Color c2 = new Color(0.0,0.1,0.0,0.1);
-        
-        int pas = 4;
-        
-        for(int i=-180;i<180;i+=pas) {
-        	
-        	for(int j=-180;j<180;j+=pas) {
-        		
-        		if (((i+j)%(pas*2)) == 0) {
-        			CallQuadri(quadriGroup,i,j,c1,pas/2);
-        		}else {
-        			CallQuadri(quadriGroup,i,j,c2,pas/2);
-        		}
-        		
-        	}
-        	
-        }        
-        root3D.getChildren().addAll(quadriGroup);
-        
-        Group lineGroup = new Group();
-        
-        for(int i=-180;i<180;i+=pas) {
-        	
-        	for(int j=-180;j<180;j+=pas) {
-        		
-        		Point3D p1 = geoCoordTo3dCoord(i,j,1);
-        		Point3D p2 = geoCoordTo3dCoord(i,j,2);
-        		Cylinder c = createLine(p1,p2);
-        		
-                final PhongMaterial mat = new PhongMaterial(c1);
-                c.setMaterial(mat);
-        		lineGroup.getChildren().addAll(c);
-        		
-        	}
-        	
-        }  
-        root3D.getChildren().addAll(lineGroup);
         */
+        
+    	initHisto(4);
+    	initQuadri(4);
+        
         // Load geometry
 
         // Draw a line
@@ -146,13 +362,15 @@ public class EarthScene extends SubScene{
         new CameraManager(camera, this, root3D);
 
         // Add point light
+        /*
         PointLight light = new PointLight(Color.WHITE);
         light.setTranslateX(-180);
         light.setTranslateY(-90);
         light.setTranslateZ(-120);
         light.getScope().addAll(root3D);
         root3D.getChildren().add(light);
-
+		*/
+        
         // Add ambient light
         AmbientLight ambientLight = new AmbientLight(Color.WHITE);
         ambientLight.getScope().addAll(root3D);
@@ -184,6 +402,7 @@ public class EarthScene extends SubScene{
 
         line.getTransforms().addAll(moveToMidpoint, rotateAroundCenter);
 
+        
         return line;
     }
 
@@ -205,7 +424,17 @@ public class EarthScene extends SubScene{
         s.setMaterial(mat);
     }
     
-    private void CallQuadri(Group parent,float lat, float lon, Color c, int pas) {
+    public void setColor(MeshView m, Color c) {
+    	
+        PhongMaterial mat = (PhongMaterial) m.getMaterial();
+        if (mat == null)
+        mat = new PhongMaterial();
+        mat.setDiffuseColor(c);
+        mat.setSpecularColor(c);
+        m.setMaterial(mat);
+    }
+    
+    private void CallQuadri(Group parent,int lat, int lon, Color c, int pas) {
     	
  	
     	PhongMaterial material = new PhongMaterial(c);
@@ -217,10 +446,20 @@ public class EarthScene extends SubScene{
     	Point3D bottomLeft = geoCoordTo3dCoord(lat+pas,lon-pas,1.02f);
     	Point3D topLeft = geoCoordTo3dCoord(lat-pas,lon-pas,1.02f);
     	//AddQuadrilateral(parent,topRight,bottomRight,bottomLeft,topLeft,material);
-    	AddQuadrilateral(parent,topRight,topLeft,bottomLeft,bottomRight,material);
+    	MeshView mv = AddQuadrilateral(parent,topRight,topLeft,bottomLeft,bottomRight,material);
+    	
+    	mv.setOnMouseClicked(e->{
+    		Controller.getInstance().setSelectedCoord(new Coord(lat,lon));
+        });
+    	
+    	
+    	
+    	//coordToMeshView.put(new Coord(lat,lon), mv);
+    	meshList.add(mv);
+    	
     }
     
-    private void AddQuadrilateral(Group parent, Point3D topRight, Point3D bottomRight,
+    private MeshView AddQuadrilateral(Group parent, Point3D topRight, Point3D bottomRight,
     		Point3D bottomLeft, Point3D topLeft, PhongMaterial material) {
     	
     	final TriangleMesh triangleMesh = new TriangleMesh();
@@ -252,9 +491,12 @@ public class EarthScene extends SubScene{
     	
     	
     	
-    	final MeshView meshView = new MeshView(triangleMesh);
+    	MeshView meshView = new MeshView(triangleMesh);
     	meshView.setMaterial(material);
     	parent.getChildren().addAll(meshView);
+    	
+    	return meshView;
+    	
     	
     }
     

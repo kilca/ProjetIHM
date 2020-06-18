@@ -121,6 +121,7 @@ public class CSVParser {
                 			temper = Float.parseFloat(data[i]);
                 		}
                 	}catch (Exception e) {
+                		System.err.println("Exception found in CSV Parser1");
                 		System.err.println(data[i]);
                 	}
             		
@@ -131,6 +132,7 @@ public class CSVParser {
             			map.get(1878+i).put(coord, temper);
 
             		}catch (Exception e) {
+                		System.err.println("Exception found in CSV Parser2");
             			System.err.println(i);
             		}
             	}
