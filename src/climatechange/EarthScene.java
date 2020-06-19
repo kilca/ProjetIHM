@@ -180,7 +180,9 @@ public class EarthScene extends SubScene{
 		
 		modelInstance.typeAffiche = TypeAffichage.Quadri;
 		
-		quadriGroup.setVisible(true);
+		//quadriGroup.setVisible(true);
+		
+		
 		lineGroup.setVisible(false);
 		
 		this.setQuadri();
@@ -191,7 +193,13 @@ public class EarthScene extends SubScene{
 		
 		modelInstance.typeAffiche = TypeAffichage.Histo;
 		
-		quadriGroup.setVisible(false);
+		//quadriGroup.setVisible(false);
+		
+		for(MeshView m : meshList) {
+			m.setMaterial(this.modelInstance.nanMaterial);
+			
+		}
+		
 		lineGroup.setVisible(true);
 		
 		this.setHisto();
@@ -237,6 +245,7 @@ public class EarthScene extends SubScene{
         
         Color c1 = new Color(0.1,0.1,0.1,0.1);
         
+
         for(int i=-88;i<=88;i+=pas) {
         	
         	for(int j=-178;j<=178;j+=pas) {
@@ -250,6 +259,13 @@ public class EarthScene extends SubScene{
                 final PhongMaterial mat = new PhongMaterial(c1);
                 c.setMaterial(mat);
 
+                Coord cord = new Coord(i,j);
+                
+            	c.setOnMouseClicked(e->{
+            		Controller.getInstance().setSelectedCoord(cord);
+            		Controller.getInstance().modifGraph();
+                });
+                
                 
         		lineGroup.getChildren().addAll(c);
         		
@@ -261,6 +277,8 @@ public class EarthScene extends SubScene{
         }  
         root3D.getChildren().addAll(lineGroup);
 		
+        
+        
 		
 	}
 	
