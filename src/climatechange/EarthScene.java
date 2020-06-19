@@ -103,10 +103,12 @@ public class EarthScene extends SubScene{
 				cylinderList.get(i).setVisible(true);
 				
 				//cast en int pour réduire le lag induit par setHeight
+				/*
 				height = Math.round(clamp((2+temps.get(i)),0.2f,5.0f));
 				height = height/2.0f;
+				*/
+				height = Math.round(Math.abs(temps.get(i))*20.0f)/20.0f;
 				
-
 				cylinderList.get(i).setHeight(height);
 				
 				
@@ -276,9 +278,12 @@ public class EarthScene extends SubScene{
         for(int i=-88;i<=88;i+=pas) {
         	
         	for(int j=-178;j<=178;j+=pas) {
-        		
+        		/*
         		Point3D p1 = geoCoordTo3dCoord(i,j,1.0f);
         		Point3D p2 = geoCoordTo3dCoord(i,j,2.0f);
+        		*/
+        		Point3D p1 = geoCoordTo3dCoord(i,j,1.0f);
+        		Point3D p2 = geoCoordTo3dCoord(i,j,1.1f);
         		Cylinder c = createLine(p1,p2);
 
         		c.setRadius(0.02);
@@ -450,6 +455,7 @@ public class EarthScene extends SubScene{
     	
     	mv.setOnMouseClicked(e->{
     		Controller.getInstance().setSelectedCoord(new Coord(lat,lon));
+    		Controller.getInstance().modifGraph();
         });
     	
     	
