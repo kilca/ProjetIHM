@@ -16,6 +16,7 @@ import javafx.fxml.Initializable;
 import javafx.geometry.Point3D;
 import javafx.scene.AmbientLight;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.PointLight;
@@ -101,23 +102,17 @@ public class EarthScene extends SubScene{
 				cylinderList.get(i).setVisible(false);
 			}else {
 				cylinderList.get(i).setVisible(true);
-				
-				//cast en int pour réduire le lag induit par setHeight
-				/*
-				height = Math.round(clamp((2+temps.get(i)),0.2f,5.0f));
-				height = height/2.0f;
-				*/
+			
 				height = Math.round(Math.abs(temps.get(i))*20.0f)/20.0f;
 				
 				cylinderList.get(i).setHeight(height);
-				
-				
 			}
 		}
 		
 		
 		for(int i=0;i<temps.size();i++) {
-			setZoneTemperatureCylinder(cylinderList,temps,i);
+			//setZoneTemperatureCylinder(cylinderList,temps,i);
+			setZoneTemperature(cylinderList,temps,i);
 		}
 		
 		
@@ -136,19 +131,21 @@ public class EarthScene extends SubScene{
 			System.err.println("erreur taille temperature array");
 		}
 		
-		for(int i=0;i<temps.size();i++) {
-			setZoneTemperatureMesh(meshList,temps,i);
+		for(int j=0;j<modelInstance.degradeRougeList.size();j++) {
+			System.out.println(modelInstance.degradeRougeList.get(j).value);
 		}
 		
 		
-		
+		for(int i=0;i<temps.size();i++) {
+			setZoneTemperature(meshList,temps,i);
+		}
+
 	}
 	
-	//pourrait utiliser de la généricité
-	public void setZoneTemperatureCylinder(List<Cylinder> meshList, List<Float> temps, int i) {
+	public void setZoneTemperature(List<? extends Shape3D> meshList, List<Float> temps, int i) {
 		
 		if (Float.isNaN(temps.get(i))) {
-			this.setColor(meshList.get(i), modelInstance.nanColor);
+			meshList.get(i).setMaterial(modelInstance.nanMaterial);
 			return;
 		}
 		
@@ -156,44 +153,23 @@ public class EarthScene extends SubScene{
 
 			for(int j=modelInstance.degradeBleuList.size()-1;j>=0;j--) {
 				if (modelInstance.degradeBleuList.get(j).value < temps.get(i)) {
-					this.setColor(meshList.get(i), modelInstance.degradeBleuList.get(j).color);
+					meshList.get(i).setMaterial(modelInstance.degradeBleuList.get(j).material);
 					return;
 				}
 			}
+			
+			meshList.get(i).setMaterial(modelInstance.degradeBleuList.get(modelInstance.degradeRougeList.size()-1).material);
+			
 		}else {
 			for(int j=0;j<modelInstance.degradeRougeList.size();j++) {
 				if (modelInstance.degradeRougeList.get(j).value > temps.get(i)) {
-					//System.out.println("temps :"+modelInstance.degradeRougeList.get(j).value+", index:"+j);
-					this.setColor(meshList.get(i), modelInstance.degradeRougeList.get(j).color);
+					meshList.get(i).setMaterial(modelInstance.degradeRougeList.get(j).material);
 					return;
 				}
 			}
-		}
-		
-	}
-	public void setZoneTemperatureMesh(List<MeshView> meshList, List<Float> temps, int i) {
-		
-		if (Float.isNaN(temps.get(i))) {
-			this.setColor(meshList.get(i), modelInstance.nanColor);
-			return;
-		}
-		
-		if (temps.get(i) < 0) {
-
-			for(int j=modelInstance.degradeBleuList.size()-1;j>=0;j--) {
-				if (modelInstance.degradeBleuList.get(j).value < temps.get(i)) {
-					this.setColor(meshList.get(i), modelInstance.degradeBleuList.get(j).color);
-					return;
-				}
-			}
-		}else {
-			for(int j=0;j<modelInstance.degradeRougeList.size();j++) {
-				if (modelInstance.degradeRougeList.get(j).value > temps.get(i)) {
-					//System.out.println("temps :"+modelInstance.degradeRougeList.get(j).value+", index:"+j);
-					this.setColor(meshList.get(i), modelInstance.degradeRougeList.get(j).color);
-					return;
-				}
-			}
+			//on met aussi les derniers (donc le dernier prend avant et apres)
+			meshList.get(i).setMaterial(modelInstance.degradeRougeList.get(modelInstance.degradeRougeList.size()-1).material);
+			
 		}
 		
 	}
@@ -421,23 +397,8 @@ public class EarthScene extends SubScene{
                 java.lang.Math.cos(java.lang.Math.toRadians(lon_cor))
                         * java.lang.Math.cos(java.lang.Math.toRadians(lat_cor))* radius);
     }
-    
-    public void setColor(Shape3D s, Color c) {
-        final PhongMaterial mat = new PhongMaterial();
-        mat.setDiffuseColor(c);
-        mat.setSpecularColor(c);
-        s.setMaterial(mat);
-    }
-    
-    public void setColor(MeshView m, Color c) {
-    	
-        PhongMaterial mat = (PhongMaterial) m.getMaterial();
-        if (mat == null)
-        mat = new PhongMaterial();
-        mat.setDiffuseColor(c);
-        mat.setSpecularColor(c);
-        m.setMaterial(mat);
-    }
+
+
     
     private void CallQuadri(Group parent,int lat, int lon, Color c, int pas) {
     	
@@ -530,8 +491,13 @@ public class EarthScene extends SubScene{
     	
     	parent.getChildren().addAll(g);
    
+    	Color c = Color.RED;
     	
-    	setColor(sphere,Color.RED);
+        final PhongMaterial mat = new PhongMaterial();
+        mat.setDiffuseColor(c);
+        mat.setSpecularColor(c);
+        sphere.setMaterial(mat);
+
     	
     	
     			
