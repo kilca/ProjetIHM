@@ -158,7 +158,7 @@ public class EarthScene extends SubScene{
 				}
 			}
 			
-			meshList.get(i).setMaterial(modelInstance.degradeBleuList.get(modelInstance.degradeRougeList.size()-1).material);
+			meshList.get(i).setMaterial(modelInstance.degradeBleuList.get(0).material);
 			
 		}else {
 			for(int j=0;j<modelInstance.degradeRougeList.size();j++) {
@@ -227,21 +227,7 @@ public class EarthScene extends SubScene{
     		count++;
         	
         }
-        /*
-        for(int i=-180;i<180;i+=pas) {
-        	
-        	for(int j=-180;j<180;j+=pas) {
-        		
-        		if (((i+j)%(pas*2)) == 0) {
-        			CallQuadri(quadriGroup,i,j,c1,pas/2);
-        		}else {
-        			CallQuadri(quadriGroup,i,j,c2,pas/2);
-        		}
-        		
-        	}
-        	
-        }
-        */ 
+
         root3D.getChildren().addAll(quadriGroup);
 		
 	}
@@ -254,10 +240,7 @@ public class EarthScene extends SubScene{
         for(int i=-88;i<=88;i+=pas) {
         	
         	for(int j=-178;j<=178;j+=pas) {
-        		/*
-        		Point3D p1 = geoCoordTo3dCoord(i,j,1.0f);
-        		Point3D p2 = geoCoordTo3dCoord(i,j,2.0f);
-        		*/
+
         		Point3D p1 = geoCoordTo3dCoord(i,j,1.0f);
         		Point3D p2 = geoCoordTo3dCoord(i,j,1.1f);
         		Cylinder c = createLine(p1,p2);
@@ -297,60 +280,16 @@ public class EarthScene extends SubScene{
     	
     	Group earth = new Group(meshViews);
     	
-        //Create a Pane et graph scene root for the 3D content
-        
-        //Pane pane3D = new Pane(root3D);
-
-        //moi : ajout du groupe earth au graphe de la scene 3D
     	root3D.getChildren().addAll(earth);
         
-        /*
-        Group cities = new Group();
-        
-        final float latMarseille = 43.447f;
-        final float longMarseille = 5.213f;
-        displayTown(cities,"Marseille",latMarseille,longMarseille);
-        
-        final float latNY = 40.63f;
-        final float longNY = -73.77f;
-        displayTown(cities,"New York",latNY,longNY);
-
-        final float latIstanbul = 40.97f;
-        final float longIstanbul = 28.81f;
-        displayTown(cities,"Istanbul",latIstanbul,longIstanbul);
-        
-        final float latSeoul = 37.46f;
-        final float longSeoul = 126.45f;
-        //displayTown(cities,"Seoul",latSeoul,longSeoul);
-        
-        root3D.getChildren().addAll(cities);
-        */
         
     	initHisto(4);
     	initQuadri(4);
-        
-        // Load geometry
-
-        // Draw a line
-
-        // Draw an helix
-
-        // Draw city on the earth
-
 
         // Add a camera group
         PerspectiveCamera camera = new PerspectiveCamera(true);
         new CameraManager(camera, this, root3D);
 
-        // Add point light
-        /*
-        PointLight light = new PointLight(Color.WHITE);
-        light.setTranslateX(-180);
-        light.setTranslateY(-90);
-        light.setTranslateZ(-120);
-        light.getScope().addAll(root3D);
-        root3D.getChildren().add(light);
-		*/
         
         // Add ambient light
         AmbientLight ambientLight = new AmbientLight(Color.WHITE);
@@ -359,9 +298,6 @@ public class EarthScene extends SubScene{
         
         this.setCamera(camera);
         this.setFill(Color.gray(0.2));
-        
-        //group3D.getChildren().addAll(this);
-        
 
     }
 
@@ -418,10 +354,7 @@ public class EarthScene extends SubScene{
     		Controller.getInstance().setSelectedCoord(new Coord(lat,lon));
     		Controller.getInstance().modifGraph();
         });
-    	
-    	
-    	
-    	//coordToMeshView.put(new Coord(lat,lon), mv);
+
     	meshList.add(mv);
     	
     }

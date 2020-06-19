@@ -52,7 +52,7 @@ public class ClimateLineChart extends LineChart<Number,Number>{
 		yAxis = (NumberAxis) this.getYAxis();
         XYChart.Series<Number,Number> series = new XYChart.Series<Number,Number>();
 		
-        //yAxis.setAutoRanging(littleChart);
+        yAxis.setAutoRanging(true);
 		
 		if (!littleChart) {
 			xAxis.setLabel("years");

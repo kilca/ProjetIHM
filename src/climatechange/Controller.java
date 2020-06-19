@@ -110,7 +110,6 @@ public class Controller implements Initializable {
 		}else {
 			val = ""+modelInstance.getTempsFromZoneYear(c, modelInstance.yearSelected);
 			try {
-				//ca arrive
 				val = "temp :"+val.substring(0, 5);
 			}catch(Exception e) {
 				val = "temp :"+val;
@@ -219,16 +218,12 @@ public class Controller implements Initializable {
 					stage.setScene(new Scene(root, 400, 500));
 					stage.show();
 						
-					//todo label "select a zone to print values"
-						
 					List<Float> temperatures = modelInstance.getTempsFromZone(modelInstance.zoneSelected);
 					ClimateLineChart lChart = new ClimateLineChart(temperatures,false);
 						
 					root.getChildren().addAll(lChart);
 				
             	}
-				// Hide this current window (if this is what you want)
-				//((Node)(event.getSource())).getScene().getWindow().hide();
             	
             	
             }
@@ -355,7 +350,6 @@ public class Controller implements Initializable {
         Group root3D = new Group();
 		
         // Create scene
-        //SubScene subscene = new SubScene(root3D,600,600,true,SceneAntialiasing.BALANCED);
         earthScene = new EarthScene(root3D,600,600,true,SceneAntialiasing.BALANCED);
         earthScene.init();
         
