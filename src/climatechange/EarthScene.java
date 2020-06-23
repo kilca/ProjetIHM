@@ -107,10 +107,6 @@ public class EarthScene extends SubScene{
 			System.err.println("erreur taille temperature array");
 		}
 		
-		for(int j=0;j<modelInstance.degradeRougeList.size();j++) {
-			System.out.println(modelInstance.degradeRougeList.get(j).value);
-		}
-		
 		
 		for(int i=0;i<temps.size();i++) {
 			setZoneTemperature(meshList,temps,i);
@@ -152,8 +148,6 @@ public class EarthScene extends SubScene{
 	
 	public void afficherQuadri() {
 		
-		System.out.println("on affiche le Quadri");
-		
 		modelInstance.typeAffiche = TypeAffichage.Quadri;
 		
 		lineGroup.setVisible(false);
@@ -178,8 +172,6 @@ public class EarthScene extends SubScene{
 	}
 
 	public void initQuadri(int pas) {
-		
-        System.out.println("j'init quadri");
 		
         quadriGroup = new Group();
         
@@ -258,7 +250,7 @@ public class EarthScene extends SubScene{
     		objImporter.read(modelUrl);
     	}catch (ImportException e ) {
     		//handle exception
-    		System.out.println(e.getMessage());
+    		System.err.println(e.getMessage());
     	}
     	MeshView[] meshViews = objImporter.getImport();
     	

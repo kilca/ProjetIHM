@@ -345,7 +345,6 @@ public class Controller implements Initializable {
 		
 		
 		modelInstance = ResourceManager.getInstance();
-		System.out.println(modelInstance);
 		
         Group root3D = new Group();
 		
