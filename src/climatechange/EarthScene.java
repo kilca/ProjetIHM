@@ -47,11 +47,6 @@ public class EarthScene extends SubScene{
     
     private Group quadriGroup;
     
-    /*
-    private HashMap<Coord,Cylinder> coordToCylinder;
-    private HashMap<Coord,MeshView> coordToMeshView;
-    */
-    
     private List<MeshView> meshList;
     private List<Cylinder> cylinderList;
     
@@ -61,11 +56,6 @@ public class EarthScene extends SubScene{
 		super(root, width, height, depthBuffer, antiAliasing);
 		root3D = (Group) root;
 		
-		/*
-		coordToCylinder = new HashMap<Coord,Cylinder>();
-		coordToMeshView = new HashMap<Coord,MeshView>();
-		*/
-		
 		meshList = new ArrayList<MeshView>();
 		cylinderList = new ArrayList<Cylinder>();
 		
@@ -73,13 +63,6 @@ public class EarthScene extends SubScene{
 		
 	}
 
-/*
-	@Override
-	public void initialize(URL location, ResourceBundle resources) {
-		// TODO Auto-generated method stub
-		System.out.println("called");
-	}
-*/
 	
 	public static float clamp(float val, float min, float max) {
 	    return Math.max(min, Math.min(max, val));
@@ -93,9 +76,7 @@ public class EarthScene extends SubScene{
 			System.err.println("erreur taille temperature array ("+temps.size()+","+cylinderList.size());
 			return;
 		}
-		
-		
-		
+
 		float height;
 		for(int i=0;i<temps.size();i++) {
 			if (Float.isNaN(temps.get(i))) {
@@ -115,13 +96,8 @@ public class EarthScene extends SubScene{
 			setZoneTemperature(cylinderList,temps,i);
 		}
 		
-		
-		
-		
 	}
-	
-	
-	
+
 	
 	public void setQuadri() {
 		
@@ -180,9 +156,6 @@ public class EarthScene extends SubScene{
 		
 		modelInstance.typeAffiche = TypeAffichage.Quadri;
 		
-		//quadriGroup.setVisible(true);
-		
-		
 		lineGroup.setVisible(false);
 		
 		this.setQuadri();
@@ -192,8 +165,6 @@ public class EarthScene extends SubScene{
 	public void afficherHisto() {
 		
 		modelInstance.typeAffiche = TypeAffichage.Histo;
-		
-		//quadriGroup.setVisible(false);
 		
 		for(MeshView m : meshList) {
 			m.setMaterial(this.modelInstance.nanMaterial);
@@ -244,8 +215,7 @@ public class EarthScene extends SubScene{
         lineGroup = new Group();
         
         Color c1 = new Color(0.1,0.1,0.1,0.1);
-        
-
+       
         for(int i=-88;i<=88;i+=pas) {
         	
         	for(int j=-178;j<=178;j+=pas) {
@@ -276,10 +246,6 @@ public class EarthScene extends SubScene{
         	
         }  
         root3D.getChildren().addAll(lineGroup);
-		
-        
-        
-		
 	}
 	
 	
@@ -418,6 +384,7 @@ public class EarthScene extends SubScene{
     	
     }
     
+    //non utilise, proviens du tutoriel
     private void displayTown(Group parent, String name, float latitude, float longitude) {
     	//name ???
     	
