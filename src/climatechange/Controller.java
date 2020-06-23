@@ -2,21 +2,13 @@ package climatechange;
 
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
-import javafx.geometry.Point3D;
 import javafx.scene.Group;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.PerspectiveCamera;
-import javafx.scene.PointLight;
 import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
-import javafx.scene.SubScene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -24,15 +16,9 @@ import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.PhongMaterial;
-import javafx.scene.shape.Box;
-import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
-import java.io.IOException;
 import java.net.URL;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -41,7 +27,6 @@ import climatechange.models.ResourceManager;
 import climatechange.models.ResourceManager.Degrade;
 import climatechange.models.TypeAffichage;
 import javafx.animation.AnimationTimer;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -102,6 +87,9 @@ public class Controller implements Initializable {
 	@FXML
 	private Label lblTemp;
 	
+	@FXML
+	private Group groupLineChart;
+	
 	private EarthScene earthScene;
 	
 	private AnimationTimer anim;
@@ -122,7 +110,6 @@ public class Controller implements Initializable {
 		}else {
 			val = ""+modelInstance.getTempsFromZoneYear(c, modelInstance.yearSelected);
 			try {
-				//ca arrive
 				val = "temp :"+val.substring(0, 5);
 			}catch(Exception e) {
 				val = "temp :"+val;
@@ -195,9 +182,6 @@ public class Controller implements Initializable {
           	  }
           	  
           	ResourceManager.getInstance().vitesseAnimation = speedVal;
-          	  
-          	  
-          	  
             }
         });
         
@@ -226,26 +210,20 @@ public class Controller implements Initializable {
             @Override
             public void handle(ActionEvent event) {
 
-            	if (lineChart == null) {
-            	
-	                Pane root;
-	                root = new Pane();
-					Stage stage = new Stage();
+				if (modelInstance.zoneSelected != null) {
+		            Pane root;
+		            root = new Pane();
+		            Stage stage = new Stage();
 					stage.setTitle("Evolution Temperature");
 					stage.setScene(new Scene(root, 400, 500));
 					stage.show();
-					
-					//todo label "select a zone to print values"
-					if (modelInstance.zoneSelected != null) {
 						
-						List<Float> temperatures = modelInstance.getTempsFromZone(modelInstance.zoneSelected);
-						lineChart = new ClimateLineChart(temperatures);
+					List<Float> temperatures = modelInstance.getTempsFromZone(modelInstance.zoneSelected);
+					ClimateLineChart lChart = new ClimateLineChart(temperatures,false);
 						
-						root.getChildren().addAll(lineChart);
-					}
+					root.getChildren().addAll(lChart);
+				
             	}
-				// Hide this current window (if this is what you want)
-				//((Node)(event.getSource())).getScene().getWindow().hide();
             	
             	
             }
@@ -269,39 +247,50 @@ public class Controller implements Initializable {
                  }
            }
        );
+	     
+	     
 		btnPlay.setOnAction(new EventHandler<ActionEvent>() {
 	            @Override
 	            public void handle(ActionEvent event) {
-	            	
-	            	//todo vitesse animation
 	            	
 	            	if (!modelInstance.isAnimPlaying) {
 	            		
 	            		modelInstance.isAnimPlaying = true;
 	            		
 	                	long startNanoTime = System.nanoTime();
+	                	
+	                	//probleme AnimationTimer : update non fixés
 	                	anim = new AnimationTimer(){
 	                    	
 		                	int secondElapsed = 0;
 	                        public void handle(long currentNanoTime){
 	                        	
-	                        	double t = modelInstance.vitesseAnimation * (currentNanoTime - startNanoTime) / 1000000000.0;
+	                        	double t = Math.abs(modelInstance.vitesseAnimation) * (currentNanoTime - startNanoTime) / 1000000000.0;
 
 	                        	if (t > secondElapsed+1) {
 	                        		secondElapsed+=1.0;
-	                            	if (modelInstance.yearSelected+1 >= modelInstance.maxYear) {
-	                            		
-	                            		//modifie aussi le textProperty et ses appels
-		                        		modelInstance.yearSelected=(int)modelInstance.minYear;
+	                        		
+	                        		if (modelInstance.vitesseAnimation > 0) {
+	                        			if (modelInstance.yearSelected+1 > modelInstance.maxYear) {
+	                        				
+			                        		modelInstance.yearSelected=(int)modelInstance.minYear;
+	                        			}else {
+		                        			modelInstance.yearSelected+=1;	
+	                        				
+	                        			}
 		                        		sliderTime.setValue(modelInstance.yearSelected);
-		                        		
-		                        	}else {
-		                        		modelInstance.yearSelected+=1;
-		                        		
-		                        		//modifie aussi le textProperty et ses appels
+	                        			
+	                        		}else {
+	                        			if (modelInstance.yearSelected-1 < modelInstance.minYear) {
+	                        				
+			                        		modelInstance.yearSelected=(int)modelInstance.maxYear;
+	                        			}else {
+		                        			modelInstance.yearSelected-=1;	
+	                        				
+	                        			}
 		                        		sliderTime.setValue(modelInstance.yearSelected);
+	                        		}
 
-		                        	}
 	                        	}
 	                        }
 	                    };
@@ -320,29 +309,47 @@ public class Controller implements Initializable {
 	            }
 	        });
 	     
-
+		btnStop.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+            		
+            		modelInstance.isAnimPlaying = false;
+            		if (anim != null)
+            			anim.stop();
+           			modelInstance.yearSelected = modelInstance.minYear;
+           			sliderTime.setValue(modelInstance.yearSelected);
+	                   btnPlay.setText("Play");
+            }
+        });
 	     
 		
 	}
 	
-	
+	public void modifGraph() {
+		
+		List<Float> temperatures = modelInstance.getTempsFromZone(modelInstance.zoneSelected);
+		
+		lineChart = new ClimateLineChart(temperatures,true);
+		lineChart.setPrefWidth(150);
+		lineChart.setPrefHeight(100);
+		groupLineChart.getChildren().remove(0);
+		groupLineChart.getChildren().addAll(lineChart);
+		
+	}
 
+	
 	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
-		// TODO Auto-generated method stub
-
-        //Create a Pane et graph scene root for the 3D content
-
-        // ...
-
+	
+		
+		
 		modelInstance = ResourceManager.getInstance();
 		System.out.println(modelInstance);
 		
         Group root3D = new Group();
 		
         // Create scene
-        //SubScene subscene = new SubScene(root3D,600,600,true,SceneAntialiasing.BALANCED);
         earthScene = new EarthScene(root3D,600,600,true,SceneAntialiasing.BALANCED);
         earthScene.init();
         
@@ -363,19 +370,6 @@ public class Controller implements Initializable {
         	
         	this.ajouterDegrade(d.color,d.value);
         }
-        
-        
-    	/*
-        final long startNanoTime = System.nanoTime();
-        new AnimationTimer(){
-            public void handle(long currentNanoTime){
-                double t = (currentNanoTime - startNanoTime) / 1000000000.0;
-                //For the animation
-                greenCube.setRotationAxis(new Point3D(0,1,0));
-                greenCube.setRotate(20.0 * t);
-            }
-        }.start();
-        */
 		
 	}
 	

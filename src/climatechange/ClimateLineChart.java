@@ -14,9 +14,11 @@ public class ClimateLineChart extends LineChart<Number,Number>{
 	private NumberAxis xAxis;
 	private NumberAxis yAxis;
 	
-	public ClimateLineChart(List<Float> temperatures) {
+	public ClimateLineChart() {
 		super (new NumberAxis(ResourceManager.getInstance().minYear,ResourceManager.getInstance().maxYear,1),
 				new NumberAxis(ResourceManager.getInstance().minTemp,ResourceManager.getInstance().maxTemp,1));
+		
+		this.setLegendVisible(false);
 		
 		xAxis = (NumberAxis) this.getXAxis();
 		yAxis = (NumberAxis) this.getYAxis();
@@ -28,14 +30,45 @@ public class ClimateLineChart extends LineChart<Number,Number>{
 		
 		this.setTitle("Temperature variation");
         //defining a series
-        XYChart.Series series = new XYChart.Series();
+        XYChart.Series<Number,Number> series = new XYChart.Series<Number,Number>();
         series.setName("Temperature");
 
+	}
+	
+	public ClimateLineChart(Axis<Number> xAxis, Axis<Number> yAxis) {
+		super(xAxis, yAxis);
+		this.setLegendVisible(false);
+		// TODO Auto-generated constructor stub
+	}
+	
+	public ClimateLineChart(List<Float> temperatures, boolean littleChart) {
+		super (new NumberAxis(ResourceManager.getInstance().minYear,ResourceManager.getInstance().maxYear,
+				20),
+				new NumberAxis(ResourceManager.getInstance().minTemp,ResourceManager.getInstance().maxTemp,1));
+		
+		this.setLegendVisible(!littleChart);
+		
+		xAxis = (NumberAxis) this.getXAxis();
+		yAxis = (NumberAxis) this.getYAxis();
+        XYChart.Series<Number,Number> series = new XYChart.Series<Number,Number>();
+		
+        yAxis.setAutoRanging(true);
+		
+		if (!littleChart) {
+			xAxis.setLabel("years");
+			yAxis.setLabel("temperature variation");
+			this.setTitle("Temperature variation");
+	        series.setName("Temperature");
+		}
+		
+        //defining a series
+		
         
         int annee = ResourceManager.getInstance().minYear;
         for(int i=0;i<temperatures.size();i++) {
-        	if (!Float.isNaN(temperatures.get(i)))
-        		series.getData().add(new XYChart.Data(annee, temperatures.get(i)));
+        	if (!Float.isNaN(temperatures.get(i))) {
+        		series.getData().add(new XYChart.Data<Number,Number>(annee, temperatures.get(i)));
+        	}
             annee++;
         	
         }
@@ -53,13 +86,13 @@ public class ClimateLineChart extends LineChart<Number,Number>{
 	}
 	
 	public void setTemperatures(List<Float> temperatures) {
-        XYChart.Series series = new XYChart.Series();
+        XYChart.Series<Number,Number> series = new XYChart.Series<Number,Number>();
 
         
         int annee = ResourceManager.getInstance().minYear;
         for(int i=0;i<temperatures.size();i++) {
         	if (!Float.isNaN(temperatures.get(i)))
-        		series.getData().add(new XYChart.Data(annee, temperatures.get(i)));
+        		series.getData().add(new XYChart.Data<Number,Number>(annee, temperatures.get(i)));
             annee++;
         	
         }
@@ -73,11 +106,7 @@ public class ClimateLineChart extends LineChart<Number,Number>{
        }
         
 	}
-	
-	public ClimateLineChart(Axis<Number> xAxis, Axis<Number> yAxis) {
-		super(xAxis, yAxis);
-		// TODO Auto-generated constructor stub
-	}
+
 
 
 

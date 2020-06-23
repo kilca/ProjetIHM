@@ -8,6 +8,8 @@ import java.util.List;
 import climatechange.CSVParser;
 import climatechange.Controller;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Material;
+import javafx.scene.paint.PhongMaterial;
 import javafx.util.Pair;
 
 public class ResourceManager {
@@ -31,7 +33,7 @@ public class ResourceManager {
 	public List<Degrade> degradeBleuList;
 	public List<Degrade> degradeRougeList;
     
-	public Color nanColor = new Color(0.1f,0.1f,0.1f,0.1f);
+	public PhongMaterial nanMaterial = new PhongMaterial(new Color(0.1f,0.1f,0.1f,0.1f));
 	
 	private static final int NB_DEGRADE_BLEU = 5;
 	private static final int NB_DEGRADE_ROUGE = 5;
@@ -39,9 +41,12 @@ public class ResourceManager {
     public class Degrade{
 
     	public Color color;
+    	
+    	public Material material;
     	public float value;
     	
     	public Degrade(Color c, float f) {
+    		this.material = new PhongMaterial(c);
     		this.color = c;
     		this.value =f;
     		

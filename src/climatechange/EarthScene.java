@@ -16,6 +16,7 @@ import javafx.fxml.Initializable;
 import javafx.geometry.Point3D;
 import javafx.scene.AmbientLight;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.PointLight;
@@ -46,11 +47,6 @@ public class EarthScene extends SubScene{
     
     private Group quadriGroup;
     
-    /*
-    private HashMap<Coord,Cylinder> coordToCylinder;
-    private HashMap<Coord,MeshView> coordToMeshView;
-    */
-    
     private List<MeshView> meshList;
     private List<Cylinder> cylinderList;
     
@@ -60,11 +56,6 @@ public class EarthScene extends SubScene{
 		super(root, width, height, depthBuffer, antiAliasing);
 		root3D = (Group) root;
 		
-		/*
-		coordToCylinder = new HashMap<Coord,Cylinder>();
-		coordToMeshView = new HashMap<Coord,MeshView>();
-		*/
-		
 		meshList = new ArrayList<MeshView>();
 		cylinderList = new ArrayList<Cylinder>();
 		
@@ -72,13 +63,6 @@ public class EarthScene extends SubScene{
 		
 	}
 
-/*
-	@Override
-	public void initialize(URL location, ResourceBundle resources) {
-		// TODO Auto-generated method stub
-		System.out.println("called");
-	}
-*/
 	
 	public static float clamp(float val, float min, float max) {
 	    return Math.max(min, Math.min(max, val));
@@ -92,39 +76,28 @@ public class EarthScene extends SubScene{
 			System.err.println("erreur taille temperature array ("+temps.size()+","+cylinderList.size());
 			return;
 		}
-		
-		
-		
+
 		float height;
 		for(int i=0;i<temps.size();i++) {
 			if (Float.isNaN(temps.get(i))) {
 				cylinderList.get(i).setVisible(false);
 			}else {
 				cylinderList.get(i).setVisible(true);
+			
+				height = Math.round(Math.abs(temps.get(i))*20.0f)/20.0f;
 				
-				//cast en int pour réduire le lag induit par setHeight
-				height = Math.round(clamp((2+temps.get(i)),0.2f,5.0f));
-				height = height/2.0f;
-				
-
 				cylinderList.get(i).setHeight(height);
-				
-				
 			}
 		}
 		
 		
 		for(int i=0;i<temps.size();i++) {
-			setZoneTemperatureCylinder(cylinderList,temps,i);
+			//setZoneTemperatureCylinder(cylinderList,temps,i);
+			setZoneTemperature(cylinderList,temps,i);
 		}
 		
-		
-		
-		
 	}
-	
-	
-	
+
 	
 	public void setQuadri() {
 		
@@ -134,19 +107,21 @@ public class EarthScene extends SubScene{
 			System.err.println("erreur taille temperature array");
 		}
 		
-		for(int i=0;i<temps.size();i++) {
-			setZoneTemperatureMesh(meshList,temps,i);
+		for(int j=0;j<modelInstance.degradeRougeList.size();j++) {
+			System.out.println(modelInstance.degradeRougeList.get(j).value);
 		}
 		
 		
-		
+		for(int i=0;i<temps.size();i++) {
+			setZoneTemperature(meshList,temps,i);
+		}
+
 	}
 	
-	//pourrait utiliser de la généricité
-	public void setZoneTemperatureCylinder(List<Cylinder> meshList, List<Float> temps, int i) {
+	public void setZoneTemperature(List<? extends Shape3D> meshList, List<Float> temps, int i) {
 		
 		if (Float.isNaN(temps.get(i))) {
-			this.setColor(meshList.get(i), modelInstance.nanColor);
+			meshList.get(i).setMaterial(modelInstance.nanMaterial);
 			return;
 		}
 		
@@ -154,44 +129,23 @@ public class EarthScene extends SubScene{
 
 			for(int j=modelInstance.degradeBleuList.size()-1;j>=0;j--) {
 				if (modelInstance.degradeBleuList.get(j).value < temps.get(i)) {
-					this.setColor(meshList.get(i), modelInstance.degradeBleuList.get(j).color);
+					meshList.get(i).setMaterial(modelInstance.degradeBleuList.get(j).material);
 					return;
 				}
 			}
+			
+			meshList.get(i).setMaterial(modelInstance.degradeBleuList.get(0).material);
+			
 		}else {
 			for(int j=0;j<modelInstance.degradeRougeList.size();j++) {
 				if (modelInstance.degradeRougeList.get(j).value > temps.get(i)) {
-					//System.out.println("temps :"+modelInstance.degradeRougeList.get(j).value+", index:"+j);
-					this.setColor(meshList.get(i), modelInstance.degradeRougeList.get(j).color);
+					meshList.get(i).setMaterial(modelInstance.degradeRougeList.get(j).material);
 					return;
 				}
 			}
-		}
-		
-	}
-	public void setZoneTemperatureMesh(List<MeshView> meshList, List<Float> temps, int i) {
-		
-		if (Float.isNaN(temps.get(i))) {
-			this.setColor(meshList.get(i), modelInstance.nanColor);
-			return;
-		}
-		
-		if (temps.get(i) < 0) {
-
-			for(int j=modelInstance.degradeBleuList.size()-1;j>=0;j--) {
-				if (modelInstance.degradeBleuList.get(j).value < temps.get(i)) {
-					this.setColor(meshList.get(i), modelInstance.degradeBleuList.get(j).color);
-					return;
-				}
-			}
-		}else {
-			for(int j=0;j<modelInstance.degradeRougeList.size();j++) {
-				if (modelInstance.degradeRougeList.get(j).value > temps.get(i)) {
-					//System.out.println("temps :"+modelInstance.degradeRougeList.get(j).value+", index:"+j);
-					this.setColor(meshList.get(i), modelInstance.degradeRougeList.get(j).color);
-					return;
-				}
-			}
+			//on met aussi les derniers (donc le dernier prend avant et apres)
+			meshList.get(i).setMaterial(modelInstance.degradeRougeList.get(modelInstance.degradeRougeList.size()-1).material);
+			
 		}
 		
 	}
@@ -202,7 +156,6 @@ public class EarthScene extends SubScene{
 		
 		modelInstance.typeAffiche = TypeAffichage.Quadri;
 		
-		quadriGroup.setVisible(true);
 		lineGroup.setVisible(false);
 		
 		this.setQuadri();
@@ -213,7 +166,11 @@ public class EarthScene extends SubScene{
 		
 		modelInstance.typeAffiche = TypeAffichage.Histo;
 		
-		quadriGroup.setVisible(false);
+		for(MeshView m : meshList) {
+			m.setMaterial(this.modelInstance.nanMaterial);
+			
+		}
+		
 		lineGroup.setVisible(true);
 		
 		this.setHisto();
@@ -249,21 +206,7 @@ public class EarthScene extends SubScene{
     		count++;
         	
         }
-        /*
-        for(int i=-180;i<180;i+=pas) {
-        	
-        	for(int j=-180;j<180;j+=pas) {
-        		
-        		if (((i+j)%(pas*2)) == 0) {
-        			CallQuadri(quadriGroup,i,j,c1,pas/2);
-        		}else {
-        			CallQuadri(quadriGroup,i,j,c2,pas/2);
-        		}
-        		
-        	}
-        	
-        }
-        */ 
+
         root3D.getChildren().addAll(quadriGroup);
 		
 	}
@@ -272,13 +215,13 @@ public class EarthScene extends SubScene{
         lineGroup = new Group();
         
         Color c1 = new Color(0.1,0.1,0.1,0.1);
-        
+       
         for(int i=-88;i<=88;i+=pas) {
         	
         	for(int j=-178;j<=178;j+=pas) {
-        		
+
         		Point3D p1 = geoCoordTo3dCoord(i,j,1.0f);
-        		Point3D p2 = geoCoordTo3dCoord(i,j,2.0f);
+        		Point3D p2 = geoCoordTo3dCoord(i,j,1.1f);
         		Cylinder c = createLine(p1,p2);
 
         		c.setRadius(0.02);
@@ -286,6 +229,13 @@ public class EarthScene extends SubScene{
                 final PhongMaterial mat = new PhongMaterial(c1);
                 c.setMaterial(mat);
 
+                Coord cord = new Coord(i,j);
+                
+            	c.setOnMouseClicked(e->{
+            		Controller.getInstance().setSelectedCoord(cord);
+            		Controller.getInstance().modifGraph();
+                });
+                
                 
         		lineGroup.getChildren().addAll(c);
         		
@@ -296,8 +246,6 @@ public class EarthScene extends SubScene{
         	
         }  
         root3D.getChildren().addAll(lineGroup);
-		
-		
 	}
 	
 	
@@ -316,60 +264,16 @@ public class EarthScene extends SubScene{
     	
     	Group earth = new Group(meshViews);
     	
-        //Create a Pane et graph scene root for the 3D content
-        
-        //Pane pane3D = new Pane(root3D);
-
-        //moi : ajout du groupe earth au graphe de la scene 3D
     	root3D.getChildren().addAll(earth);
         
-        /*
-        Group cities = new Group();
-        
-        final float latMarseille = 43.447f;
-        final float longMarseille = 5.213f;
-        displayTown(cities,"Marseille",latMarseille,longMarseille);
-        
-        final float latNY = 40.63f;
-        final float longNY = -73.77f;
-        displayTown(cities,"New York",latNY,longNY);
-
-        final float latIstanbul = 40.97f;
-        final float longIstanbul = 28.81f;
-        displayTown(cities,"Istanbul",latIstanbul,longIstanbul);
-        
-        final float latSeoul = 37.46f;
-        final float longSeoul = 126.45f;
-        //displayTown(cities,"Seoul",latSeoul,longSeoul);
-        
-        root3D.getChildren().addAll(cities);
-        */
         
     	initHisto(4);
     	initQuadri(4);
-        
-        // Load geometry
-
-        // Draw a line
-
-        // Draw an helix
-
-        // Draw city on the earth
-
 
         // Add a camera group
         PerspectiveCamera camera = new PerspectiveCamera(true);
         new CameraManager(camera, this, root3D);
 
-        // Add point light
-        /*
-        PointLight light = new PointLight(Color.WHITE);
-        light.setTranslateX(-180);
-        light.setTranslateY(-90);
-        light.setTranslateZ(-120);
-        light.getScope().addAll(root3D);
-        root3D.getChildren().add(light);
-		*/
         
         // Add ambient light
         AmbientLight ambientLight = new AmbientLight(Color.WHITE);
@@ -378,9 +282,6 @@ public class EarthScene extends SubScene{
         
         this.setCamera(camera);
         this.setFill(Color.gray(0.2));
-        
-        //group3D.getChildren().addAll(this);
-        
 
     }
 
@@ -416,23 +317,8 @@ public class EarthScene extends SubScene{
                 java.lang.Math.cos(java.lang.Math.toRadians(lon_cor))
                         * java.lang.Math.cos(java.lang.Math.toRadians(lat_cor))* radius);
     }
-    
-    public void setColor(Shape3D s, Color c) {
-        final PhongMaterial mat = new PhongMaterial();
-        mat.setDiffuseColor(c);
-        mat.setSpecularColor(c);
-        s.setMaterial(mat);
-    }
-    
-    public void setColor(MeshView m, Color c) {
-    	
-        PhongMaterial mat = (PhongMaterial) m.getMaterial();
-        if (mat == null)
-        mat = new PhongMaterial();
-        mat.setDiffuseColor(c);
-        mat.setSpecularColor(c);
-        m.setMaterial(mat);
-    }
+
+
     
     private void CallQuadri(Group parent,int lat, int lon, Color c, int pas) {
     	
@@ -450,11 +336,9 @@ public class EarthScene extends SubScene{
     	
     	mv.setOnMouseClicked(e->{
     		Controller.getInstance().setSelectedCoord(new Coord(lat,lon));
+    		Controller.getInstance().modifGraph();
         });
-    	
-    	
-    	
-    	//coordToMeshView.put(new Coord(lat,lon), mv);
+
     	meshList.add(mv);
     	
     }
@@ -500,6 +384,7 @@ public class EarthScene extends SubScene{
     	
     }
     
+    //non utilise, proviens du tutoriel
     private void displayTown(Group parent, String name, float latitude, float longitude) {
     	//name ???
     	
@@ -524,8 +409,13 @@ public class EarthScene extends SubScene{
     	
     	parent.getChildren().addAll(g);
    
+    	Color c = Color.RED;
     	
-    	setColor(sphere,Color.RED);
+        final PhongMaterial mat = new PhongMaterial();
+        mat.setDiffuseColor(c);
+        mat.setSpecularColor(c);
+        sphere.setMaterial(mat);
+
     	
     	
     			
